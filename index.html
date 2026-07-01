@@ -331,7 +331,7 @@
             font-size: 1.2rem;
         }
 
-        /* ===== TASK CARD ===== */
+        /* ===== TASK CARD - IMPROVED ===== */
         .task-card {
             background: var(--bg-card);
             padding: 20px;
@@ -340,7 +340,7 @@
             transition: var(--transition);
             display: grid;
             grid-template-columns: auto 1fr auto;
-            gap: 15px;
+            gap: 20px;
             align-items: start;
             position: relative;
         }
@@ -364,8 +364,11 @@
             text-decoration: line-through;
         }
 
+        /* Checkbox - Keep it but make Complete button more visible */
         .task-checkbox {
             margin-top: 4px;
+            display: flex;
+            align-items: center;
         }
 
         .task-checkbox input[type="checkbox"] {
@@ -377,6 +380,7 @@
 
         .task-content {
             flex: 1;
+            min-width: 0;
         }
 
         .task-title {
@@ -452,15 +456,42 @@
             color: var(--danger-color);
         }
 
+        /* ===== TASK ACTIONS - IMPROVED ===== */
         .task-actions {
             display: flex;
+            flex-direction: column;
             gap: 8px;
-            flex-wrap: wrap;
+            align-items: stretch;
+            min-width: 120px;
         }
 
         .task-actions .btn {
-            font-size: 0.8rem;
-            padding: 5px 12px;
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            justify-content: center;
+            width: 100%;
+            white-space: nowrap;
+        }
+
+        /* Complete button special styling */
+        .btn-complete {
+            background: var(--success-color);
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .btn-complete:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-complete.completed {
+            background: var(--warning-color);
+        }
+
+        .btn-complete.completed:hover {
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
         }
 
         /* ===== MODAL ===== */
@@ -509,7 +540,52 @@
             justify-content: flex-end;
         }
 
-        /* ===== TOAST NOTIFICATION ===== */
+        /* ===== NOTES MODAL ===== */
+        .notes-modal {
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 95%;
+        }
+
+        .notes-modal h3 {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .notes-modal .note-item {
+            background: rgba(0, 24, 46, 0.6);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 243, 166, 0.1);
+        }
+
+        .notes-modal .note-item .note-title {
+            font-weight: 600;
+            color: var(--heading-color);
+            font-size: 1.1rem;
+        }
+
+        .notes-modal .note-item .note-desc {
+            color: var(--text-secondary);
+            margin: 5px 0;
+        }
+
+        .notes-modal .note-item .note-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 8px;
+        }
+
+        /* ===== TOAST ===== */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -551,54 +627,6 @@
             font-size: 0.9rem;
         }
 
-        /* ===== VIEW ALL NOTES MODAL ===== */
-        .notes-modal {
-            max-width: 800px;
-            max-height: 80vh;
-            overflow-y: auto;
-            width: 95%;
-        }
-
-        .notes-modal h3 {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .notes-modal .note-item {
-            background: rgba(0, 24, 46, 0.6);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            border: 1px solid rgba(255, 243, 166, 0.1);
-        }
-
-        .notes-modal .note-item .note-title {
-            font-weight: 600;
-            color: var(--heading-color);
-            font-size: 1.1rem;
-        }
-
-        .notes-modal .note-item .note-desc {
-            color: var(--text-secondary);
-            margin: 5px 0;
-        }
-
-        .notes-modal .note-item .note-meta {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 8px;
-        }
-
-        /* ===== PDF PREVIEW STYLES ===== */
-        .pdf-preview {
-            display: none;
-        }
-
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .input-grid {
@@ -607,11 +635,20 @@
 
             .task-card {
                 grid-template-columns: 1fr;
-                gap: 10px;
+                gap: 15px;
             }
 
             .task-actions {
-                justify-content: flex-start;
+                flex-direction: row;
+                flex-wrap: wrap;
+                min-width: auto;
+            }
+
+            .task-actions .btn {
+                flex: 1;
+                min-width: 80px;
+                font-size: 0.8rem;
+                padding: 6px 12px;
             }
 
             .controls-section {
@@ -673,6 +710,12 @@
 
             .modal {
                 padding: 20px;
+            }
+
+            .task-actions .btn {
+                font-size: 0.75rem;
+                padding: 5px 10px;
+                min-width: 60px;
             }
         }
 
@@ -832,7 +875,7 @@
         <div class="toast-message" id="toastMessage">Task added successfully!</div>
     </div>
 
-    <!-- ===== AUDIO (Alarm) ===== -->
+    <!-- ===== AUDIO ===== -->
     <audio id="alarmSound" preload="auto">
         <source src="data:audio/wav;base64,U3R1ZmZUdXJyAAAAAAD//w==">
     </audio>
@@ -902,7 +945,6 @@
                     tasks = [];
                 }
             } else {
-                // Add sample tasks
                 const now = new Date();
                 const today = now.toISOString().split('T')[0];
                 const tomorrow = new Date(now);
@@ -997,8 +1039,6 @@
         // ===== FILTERING & SEARCH =====
         function getFilteredTasks() {
             let filtered = [...tasks];
-
-            // Filter
             const now = new Date();
             const today = now.toISOString().split('T')[0];
             const currentTime = now.toTimeString().slice(0, 5);
@@ -1025,11 +1065,9 @@
                     });
                     break;
                 default:
-                    // 'all' - no filter
                     break;
             }
 
-            // Search
             if (searchQuery.trim()) {
                 const query = searchQuery.toLowerCase().trim();
                 filtered = filtered.filter(t =>
@@ -1061,12 +1099,15 @@
                 const statusText = task.completed ? 'Completed' : (isOverdue ? '⚠️ Overdue' : 'Pending');
                 const statusTextClass = task.completed ? 'status-completed' : (isOverdue ? 'status-overdue' :
                     'status-pending');
+                const completeBtnClass = task.completed ? 'btn-complete completed' : 'btn-complete';
+                const completeBtnText = task.completed ? '🔄 Reopen' : '✅ Complete';
 
                 return `
                     <div class="task-card ${statusClass}" data-id="${task.id}">
                         <div class="task-checkbox">
                             <input type="checkbox" ${task.completed ? 'checked' : ''} 
-                                   onchange="toggleComplete(${task.id})" />
+                                   onchange="toggleComplete(${task.id})" 
+                                   title="Click to toggle completion" />
                         </div>
                         <div class="task-content">
                             <div class="task-title">${escapeHtml(task.title)}</div>
@@ -1081,8 +1122,9 @@
                             </div>
                         </div>
                         <div class="task-actions no-print">
-                            <button class="btn btn-success btn-sm" onclick="toggleComplete(${task.id})">
-                                ${task.completed ? '🔄 Reopen' : '✅ Complete'}
+                            <!-- BIG COMPLETE BUTTON - VISIBLE AND CLEAR -->
+                            <button class="btn ${completeBtnClass}" onclick="toggleComplete(${task.id})">
+                                ${completeBtnText}
                             </button>
                             <button class="btn btn-warning btn-sm" onclick="editTask(${task.id})">✏️ Edit</button>
                             <button class="btn btn-danger btn-sm" onclick="confirmDeleteTask(${task.id})">🗑️</button>
@@ -1138,13 +1180,11 @@
                 if (task.completed || task.reminderSent) return;
                 if (task.dueDate !== today) return;
 
-                // Check if due time matches current time (within 1 minute)
                 const dueMinutes = task.dueTime.split(':').map(Number);
                 const dueTotalMinutes = dueMinutes[0] * 60 + dueMinutes[1];
                 const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
                 if (Math.abs(currentMinutes - dueTotalMinutes) <= 1) {
-                    // Send notification
                     sendReminder(task);
                     task.reminderSent = true;
                     saveTasks();
@@ -1153,7 +1193,6 @@
         }
 
         function sendReminder(task) {
-            // Browser Notification
             if (Notification.permission === 'granted') {
                 new Notification('🔔 Reminder!', {
                     body: `${task.title}\nDue: ${formatDate(task.dueDate)} at ${formatTime(task.dueTime)}`,
@@ -1163,13 +1202,8 @@
                 Notification.requestPermission();
             }
 
-            // Play Alarm Sound
             playAlarm();
-
-            // Show Toast
             showToast('🔔 Reminder!', `"${task.title}" is due now!`);
-
-            // Show popup alert
             alert(`🔔 REMINDER!\n\nTask: ${task.title}\nDue: ${formatDate(task.dueDate)} at ${formatTime(task.dueTime)}`);
         }
 
@@ -1184,10 +1218,8 @@
 
                 oscillator.frequency.value = 800;
                 oscillator.type = 'square';
-
                 gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-
                 oscillator.start(audioCtx.currentTime);
                 oscillator.stop(audioCtx.currentTime + 0.5);
 
@@ -1298,13 +1330,12 @@
             }).join('');
         }
 
-        // ===== DOWNLOAD ALL NOTES AS BEAUTIFUL PDF =====
+        // ===== DOWNLOAD ALL NOTES AS PDF =====
         document.getElementById('downloadNotesPDF').addEventListener('click', function() {
             if (tasks.length === 0) {
                 showToast('📄 No Notes', 'No notes to export!', 'warning');
                 return;
             }
-
             generateBeautifulPDF(tasks);
         });
 
@@ -1322,13 +1353,11 @@
                 minute: '2-digit'
             });
 
-            // Count statistics
             const total = tasksToExport.length;
             const completed = tasksToExport.filter(t => t.completed).length;
             const pending = total - completed;
             const overdue = tasksToExport.filter(t => !t.completed && checkOverdue(t)).length;
 
-            // Build beautiful HTML for PDF
             let htmlContent = `
                 <!DOCTYPE html>
                 <html>
@@ -1545,10 +1574,7 @@
                 </html>
             `;
 
-            // Create a Blob with the HTML content
             const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-
-            // Create a download link
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = `todo-list-${new Date().toISOString().slice(0,10)}.html`;
@@ -1694,6 +1720,7 @@
 
             console.log('🚀 Advanced To-Do App initialized!');
             console.log(`📊 ${tasks.length} tasks loaded.`);
+            console.log('✅ To complete a task, click the big green "Complete" button on any task card!');
         }
 
         // Make functions globally accessible
