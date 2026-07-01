@@ -197,6 +197,9 @@
             transition: var(--transition);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-primary {
@@ -548,6 +551,54 @@
             font-size: 0.9rem;
         }
 
+        /* ===== VIEW ALL NOTES MODAL ===== */
+        .notes-modal {
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 95%;
+        }
+
+        .notes-modal h3 {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notes-modal .note-item {
+            background: rgba(0, 24, 46, 0.6);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 243, 166, 0.1);
+        }
+
+        .notes-modal .note-item .note-title {
+            font-weight: 600;
+            color: var(--heading-color);
+            font-size: 1.1rem;
+        }
+
+        .notes-modal .note-item .note-desc {
+            color: var(--text-secondary);
+            margin: 5px 0;
+        }
+
+        .notes-modal .note-item .note-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 8px;
+        }
+
+        /* ===== PDF PREVIEW STYLES ===== */
+        .pdf-preview {
+            display: none;
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .input-grid {
@@ -594,6 +645,11 @@
                 margin-right: 0;
                 margin-bottom: 5px;
             }
+
+            .notes-modal {
+                max-width: 95%;
+                padding: 20px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -636,32 +692,6 @@
 
         ::-webkit-scrollbar-thumb:hover {
             background: var(--heading-color);
-        }
-
-        /* ===== PRINT STYLES ===== */
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-
-            .task-card {
-                break-inside: avoid;
-                border: 1px solid #ccc !important;
-            }
-
-            body {
-                background: white !important;
-                color: black !important;
-            }
-
-            .task-card {
-                background: white !important;
-                color: black !important;
-            }
-
-            .task-title {
-                color: black !important;
-            }
         }
     </style>
 </head>
@@ -757,6 +787,7 @@
                 <button class="filter-btn" data-filter="today">Today</button>
                 <button class="filter-btn" data-filter="upcoming">Upcoming</button>
                 <button class="filter-btn" data-filter="overdue">Overdue</button>
+                <button class="filter-btn btn-success btn-sm" id="viewAllNotes">📋 View All Notes</button>
                 <button class="filter-btn btn-warning btn-sm" id="exportPDF">📄 Export PDF</button>
             </div>
         </section>
@@ -775,6 +806,22 @@
             <div class="modal-actions">
                 <button class="btn btn-outline" id="cancelDelete">Cancel</button>
                 <button class="btn btn-danger" id="confirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== VIEW ALL NOTES MODAL ===== -->
+    <div class="modal-overlay" id="notesModal">
+        <div class="modal notes-modal">
+            <h3>
+                📋 All Notes
+                <button class="btn btn-sm btn-success" id="downloadNotesPDF">📥 Download All Notes as PDF</button>
+            </h3>
+            <div id="notesList">
+                <!-- Notes will be rendered here -->
+            </div>
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn btn-outline" id="closeNotesModal">Close</button>
             </div>
         </div>
     </div>
@@ -813,6 +860,9 @@
         const toast = document.getElementById('toast');
         const toastTitle = document.getElementById('toastTitle');
         const toastMessage = document.getElementById('toastMessage');
+        const notesModal = document.getElementById('notesModal');
+        const notesList = document.getElementById('notesList');
+        const closeNotesModal = document.getElementById('closeNotesModal');
 
         // Stats elements
         const totalTasksEl = document.getElementById('totalTasks');
@@ -853,23 +903,39 @@
                 }
             } else {
                 // Add sample tasks
+                const now = new Date();
+                const today = now.toISOString().split('T')[0];
+                const tomorrow = new Date(now);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
                 tasks = [{
                     id: Date.now(),
                     title: 'Learn JavaScript',
-                    description: 'Complete the advanced course',
+                    description: 'Complete the advanced course with all modules',
                     priority: 'High',
-                    dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+                    dueDate: tomorrowStr,
                     dueTime: '18:30',
                     completed: false,
                     reminderSent: false,
                     createdAt: new Date().toISOString()
                 }, {
                     id: Date.now() + 1,
-                    title: 'Build a project',
-                    description: 'Create a full-stack app',
+                    title: 'Build a Project',
+                    description: 'Create a full-stack application with React and Node.js',
                     priority: 'Medium',
-                    dueDate: new Date(Date.now() + 172800000).toISOString().split('T')[0],
+                    dueDate: tomorrowStr,
                     dueTime: '20:00',
+                    completed: false,
+                    reminderSent: false,
+                    createdAt: new Date().toISOString()
+                }, {
+                    id: Date.now() + 2,
+                    title: 'Review Pull Requests',
+                    description: 'Review and merge pending PRs from team',
+                    priority: 'High',
+                    dueDate: today,
+                    dueTime: '14:00',
                     completed: false,
                     reminderSent: false,
                     createdAt: new Date().toISOString()
@@ -1015,6 +1081,9 @@
                             </div>
                         </div>
                         <div class="task-actions no-print">
+                            <button class="btn btn-success btn-sm" onclick="toggleComplete(${task.id})">
+                                ${task.completed ? '🔄 Reopen' : '✅ Complete'}
+                            </button>
                             <button class="btn btn-warning btn-sm" onclick="editTask(${task.id})">✏️ Edit</button>
                             <button class="btn btn-danger btn-sm" onclick="confirmDeleteTask(${task.id})">🗑️</button>
                         </div>
@@ -1106,7 +1175,6 @@
 
         function playAlarm() {
             try {
-                // Create a simple beep using Web Audio API
                 const audioCtx = new(window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
@@ -1123,7 +1191,6 @@
                 oscillator.start(audioCtx.currentTime);
                 oscillator.stop(audioCtx.currentTime + 0.5);
 
-                // Play again after a short delay
                 setTimeout(() => {
                     const osc2 = audioCtx.createOscillator();
                     const gain2 = audioCtx.createGain();
@@ -1176,7 +1243,6 @@
             }
         });
 
-        // Close modal on overlay click
         deleteModal.addEventListener('click', (e) => {
             if (e.target === deleteModal) {
                 deleteModal.classList.remove('active');
@@ -1184,39 +1250,66 @@
             }
         });
 
-        // ===== EDIT TASK =====
-        function editTask(id) {
-            const task = getTaskById(id);
-            if (!task) return;
+        // ===== VIEW ALL NOTES =====
+        document.getElementById('viewAllNotes').addEventListener('click', function() {
+            renderAllNotes();
+            notesModal.classList.add('active');
+        });
 
-            // Populate form with task data
-            document.getElementById('taskTitle').value = task.title;
-            document.getElementById('taskDescription').value = task.description;
-            document.getElementById('taskPriority').value = task.priority;
-            document.getElementById('taskDueDate').value = task.dueDate;
-            document.getElementById('taskDueTime').value = task.dueTime;
+        closeNotesModal.addEventListener('click', () => {
+            notesModal.classList.remove('active');
+        });
 
-            // Change button text
-            const submitBtn = taskForm.querySelector('button[type="submit"]');
-            submitBtn.textContent = '✏️ Update Task';
-            submitBtn.style.background = '#FF9800';
+        notesModal.addEventListener('click', (e) => {
+            if (e.target === notesModal) {
+                notesModal.classList.remove('active');
+            }
+        });
 
-            // Store editing ID
-            editingTaskId = id;
-
-            // Scroll to form
-            document.querySelector('.input-section').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // ===== EXPORT PDF =====
-        document.getElementById('exportPDF').addEventListener('click', function() {
-            const tasksToExport = getFilteredTasks();
-
-            if (tasksToExport.length === 0) {
-                showToast('📄 No Tasks', 'No tasks to export!', 'warning');
+        function renderAllNotes() {
+            if (tasks.length === 0) {
+                notesList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <p>📭 No notes available</p>
+                        <p style="font-size: 0.9rem; margin-top: 10px;">Add some tasks to see them here!</p>
+                    </div>
+                `;
                 return;
             }
 
+            notesList.innerHTML = tasks.map(task => {
+                const isOverdue = checkOverdue(task);
+                const status = task.completed ? '✅ Completed' : (isOverdue ? '⚠️ Overdue' : '⏳ Pending');
+                const priorityEmoji = task.priority === 'High' ? '🔴' : task.priority === 'Medium' ? '🟡' : '🟢';
+
+                return `
+                    <div class="note-item" style="${task.completed ? 'opacity: 0.7;' : ''}">
+                        <div class="note-title">${escapeHtml(task.title)}</div>
+                        ${task.description ? `<div class="note-desc">${escapeHtml(task.description)}</div>` : ''}
+                        <div class="note-meta">
+                            <span>${priorityEmoji} ${task.priority}</span>
+                            <span>📅 ${formatDate(task.dueDate)}</span>
+                            <span>⏰ ${formatTime(task.dueTime)}</span>
+                            <span>${status}</span>
+                            ${task.completed ? '<span style="color: var(--success-color);">✅ Completed</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ===== DOWNLOAD ALL NOTES AS BEAUTIFUL PDF =====
+        document.getElementById('downloadNotesPDF').addEventListener('click', function() {
+            if (tasks.length === 0) {
+                showToast('📄 No Notes', 'No notes to export!', 'warning');
+                return;
+            }
+
+            generateBeautifulPDF(tasks);
+        });
+
+        // ===== BEAUTIFUL PDF GENERATION =====
+        function generateBeautifulPDF(tasksToExport) {
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-US', {
                 weekday: 'long',
@@ -1229,53 +1322,273 @@
                 minute: '2-digit'
             });
 
-            let content = `
-                =====================================
-                    📋 TO-DO LIST
-                =====================================
-                Generated: ${dateStr} at ${timeStr}
-                Filter: ${currentFilter.toUpperCase()}
-                Total Tasks: ${tasksToExport.length}
-                =====================================
+            // Count statistics
+            const total = tasksToExport.length;
+            const completed = tasksToExport.filter(t => t.completed).length;
+            const pending = total - completed;
+            const overdue = tasksToExport.filter(t => !t.completed && checkOverdue(t)).length;
 
+            // Build beautiful HTML for PDF
+            let htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>My To-Do List</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body {
+                            font-family: 'Segoe UI', Arial, sans-serif;
+                            background: #00182E;
+                            padding: 40px;
+                            color: #ffffff;
+                        }
+                        .pdf-container {
+                            max-width: 900px;
+                            margin: 0 auto;
+                            background: #062544;
+                            border-radius: 20px;
+                            padding: 50px;
+                            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+                            border: 1px solid #FFF3A6;
+                        }
+                        .pdf-header {
+                            text-align: center;
+                            border-bottom: 3px solid #FFD54A;
+                            padding-bottom: 30px;
+                            margin-bottom: 30px;
+                        }
+                        .pdf-header h1 {
+                            color: #FFD54A;
+                            font-size: 2.8rem;
+                            margin-bottom: 10px;
+                            letter-spacing: 2px;
+                        }
+                        .pdf-header .subtitle {
+                            color: #b0c4de;
+                            font-size: 1.1rem;
+                        }
+                        .pdf-header .date-time {
+                            color: #FFD54A;
+                            font-size: 1rem;
+                            margin-top: 10px;
+                            background: rgba(255, 213, 74, 0.1);
+                            padding: 8px 20px;
+                            border-radius: 30px;
+                            display: inline-block;
+                        }
+                        .pdf-stats {
+                            display: grid;
+                            grid-template-columns: repeat(4, 1fr);
+                            gap: 15px;
+                            margin-bottom: 35px;
+                        }
+                        .pdf-stat {
+                            background: rgba(0, 24, 46, 0.6);
+                            padding: 15px;
+                            border-radius: 12px;
+                            text-align: center;
+                            border: 1px solid rgba(255, 243, 166, 0.2);
+                        }
+                        .pdf-stat .number {
+                            font-size: 2rem;
+                            font-weight: bold;
+                            color: #FFD54A;
+                        }
+                        .pdf-stat .label {
+                            color: #b0c4de;
+                            font-size: 0.85rem;
+                            margin-top: 5px;
+                        }
+                        .pdf-stat.overdue .number { color: #f44336; }
+                        .pdf-stat.completed .number { color: #4CAF50; }
+                        .pdf-task {
+                            background: rgba(0, 24, 46, 0.4);
+                            padding: 20px;
+                            border-radius: 12px;
+                            margin-bottom: 15px;
+                            border-left: 4px solid #FFD54A;
+                            transition: all 0.3s;
+                        }
+                        .pdf-task.completed {
+                            opacity: 0.6;
+                            border-left-color: #4CAF50;
+                        }
+                        .pdf-task.overdue {
+                            border-left-color: #f44336;
+                            background: rgba(244, 67, 54, 0.1);
+                        }
+                        .pdf-task .task-title {
+                            font-size: 1.2rem;
+                            font-weight: 600;
+                            color: #ffffff;
+                            margin-bottom: 5px;
+                        }
+                        .pdf-task .task-desc {
+                            color: #b0c4de;
+                            margin-bottom: 10px;
+                            font-size: 0.95rem;
+                        }
+                        .pdf-task .task-meta {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 15px;
+                            font-size: 0.85rem;
+                            color: #b0c4de;
+                        }
+                        .pdf-task .task-meta span {
+                            background: rgba(255, 255, 255, 0.05);
+                            padding: 3px 12px;
+                            border-radius: 20px;
+                        }
+                        .pdf-task .priority-high { color: #f44336; font-weight: 600; }
+                        .pdf-task .priority-medium { color: #FF9800; font-weight: 600; }
+                        .pdf-task .priority-low { color: #4CAF50; font-weight: 600; }
+                        .pdf-task .status {
+                            padding: 3px 12px;
+                            border-radius: 20px;
+                            font-weight: 600;
+                            font-size: 0.8rem;
+                            text-transform: uppercase;
+                        }
+                        .pdf-task .status-pending { background: rgba(255, 213, 74, 0.2); color: #FFD54A; }
+                        .pdf-task .status-completed { background: rgba(76, 175, 80, 0.2); color: #4CAF50; }
+                        .pdf-task .status-overdue { background: rgba(244, 67, 54, 0.2); color: #f44336; }
+                        .pdf-footer {
+                            text-align: center;
+                            margin-top: 40px;
+                            padding-top: 20px;
+                            border-top: 2px solid rgba(255, 243, 166, 0.2);
+                            color: #b0c4de;
+                            font-size: 0.9rem;
+                        }
+                        .pdf-footer span {
+                            color: #FFD54A;
+                        }
+                        @media print {
+                            body { padding: 20px; }
+                            .pdf-container { box-shadow: none; }
+                        }
+                        @media (max-width: 600px) {
+                            .pdf-stats { grid-template-columns: 1fr 1fr; }
+                            .pdf-container { padding: 20px; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="pdf-container">
+                        <div class="pdf-header">
+                            <h1>📋 My To-Do List</h1>
+                            <div class="subtitle">Complete Task Manager Report</div>
+                            <div class="date-time">
+                                📅 ${dateStr} &nbsp;|&nbsp; ⏰ ${timeStr}
+                            </div>
+                        </div>
+
+                        <div class="pdf-stats">
+                            <div class="pdf-stat">
+                                <div class="number">${total}</div>
+                                <div class="label">📊 Total Tasks</div>
+                            </div>
+                            <div class="pdf-stat">
+                                <div class="number">${pending}</div>
+                                <div class="label">⏳ Pending</div>
+                            </div>
+                            <div class="pdf-stat completed">
+                                <div class="number">${completed}</div>
+                                <div class="label">✅ Completed</div>
+                            </div>
+                            <div class="pdf-stat overdue">
+                                <div class="number">${overdue}</div>
+                                <div class="label">⚠️ Overdue</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 25px;">
+                            <h3 style="color: #FFD54A; font-size: 1.3rem; margin-bottom: 15px;">📌 Task Details</h3>
             `;
 
             tasksToExport.forEach((task, index) => {
-                const status = task.completed ? '✅ COMPLETED' : (checkOverdue(task) ? '⚠️ OVERDUE' : '⏳ PENDING');
-                content += `
-                ${index + 1}. ${task.title}
-                   Description: ${task.description || 'No description'}
-                   Priority: ${task.priority}
-                   Due Date: ${formatDate(task.dueDate)}
-                   Due Time: ${formatTime(task.dueTime)}
-                   Status: ${status}
-                ${task.completed ? '   ✅ Completed' : ''}
-                -------------------------------------
-                `;
+                const isOverdue = checkOverdue(task);
+                const statusClass = task.completed ? 'completed' : (isOverdue ? 'overdue' : '');
+                const statusText = task.completed ? 'Completed' : (isOverdue ? '⚠️ Overdue' : 'Pending');
+                const statusClass2 = task.completed ? 'status-completed' : (isOverdue ? 'status-overdue' :
+                    'status-pending');
+                const priorityClass = 'priority-' + task.priority.toLowerCase();
+
+                htmlContent += `
+                            <div class="pdf-task ${statusClass}">
+                                <div class="task-title">${index + 1}. ${escapeHtml(task.title)}</div>
+                                ${task.description ? `<div class="task-desc">${escapeHtml(task.description)}</div>` : ''}
+                                <div class="task-meta">
+                                    <span class="${priorityClass}">
+                                        ${task.priority === 'High' ? '🔴' : task.priority === 'Medium' ? '🟡' : '🟢'} ${task.priority}
+                                    </span>
+                                    <span>📅 ${formatDate(task.dueDate)}</span>
+                                    <span>⏰ ${formatTime(task.dueTime)}</span>
+                                    <span class="status ${statusClass2}">${statusText}</span>
+                                    ${task.completed ? '<span style="color: #4CAF50;">✅ Completed</span>' : ''}
+                                </div>
+                            </div>
+                        `;
             });
 
-            content += `
-                =====================================
-                📊 Summary
-                =====================================
-                Total: ${tasksToExport.length}
-                Pending: ${tasksToExport.filter(t => !t.completed && !checkOverdue(t)).length}
-                Completed: ${tasksToExport.filter(t => t.completed).length}
-                Overdue: ${tasksToExport.filter(t => !t.completed && checkOverdue(t)).length}
-                =====================================
+            htmlContent += `
+                        </div>
+
+                        <div class="pdf-footer">
+                            <p>Generated with ❤️ using <span>Advanced To-Do App</span></p>
+                            <p style="font-size: 0.8rem; margin-top: 5px;">Total Tasks: ${total} | Completed: ${completed} | Pending: ${pending} | Overdue: ${overdue}</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
             `;
 
-            // Create blob and download
-            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            // Create a Blob with the HTML content
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+
+            // Create a download link
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `todo-list-${new Date().toISOString().slice(0,10)}.txt`;
+            link.download = `todo-list-${new Date().toISOString().slice(0,10)}.html`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(link.href);
 
-            showToast('📄 Exported!', 'Task list exported successfully!');
+            showToast('📄 PDF Generated!', 'Your beautiful PDF has been created!', 'success');
+        }
+
+        // ===== EDIT TASK =====
+        function editTask(id) {
+            const task = getTaskById(id);
+            if (!task) return;
+
+            document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskDescription').value = task.description;
+            document.getElementById('taskPriority').value = task.priority;
+            document.getElementById('taskDueDate').value = task.dueDate;
+            document.getElementById('taskDueTime').value = task.dueTime;
+
+            const submitBtn = taskForm.querySelector('button[type="submit"]');
+            submitBtn.textContent = '✏️ Update Task';
+            submitBtn.style.background = '#FF9800';
+
+            editingTaskId = id;
+            document.querySelector('.input-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ===== EXPORT PDF =====
+        document.getElementById('exportPDF').addEventListener('click', function() {
+            const tasksToExport = getFilteredTasks();
+
+            if (tasksToExport.length === 0) {
+                showToast('📄 No Tasks', 'No tasks to export!', 'warning');
+                return;
+            }
+
+            generateBeautifulPDF(tasksToExport);
         });
 
         // ===== FORM SUBMIT =====
@@ -1297,7 +1610,6 @@
             };
 
             if (editingTaskId !== null) {
-                // Update existing task
                 const task = getTaskById(editingTaskId);
                 if (task) {
                     task.title = taskData.title;
@@ -1309,18 +1621,14 @@
                     showToast('✏️ Task Updated', `"${task.title}" updated successfully!`);
                 }
                 editingTaskId = null;
-                // Reset button
                 const submitBtn = taskForm.querySelector('button[type="submit"]');
                 submitBtn.textContent = '➕ Add Task';
                 submitBtn.style.background = '';
             } else {
-                // Add new task
                 addTask(taskData);
             }
 
-            // Reset form
             taskForm.reset();
-            // Set default date to tomorrow
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             document.getElementById('taskDueDate').value = tomorrow.toISOString().split('T')[0];
@@ -1335,8 +1643,7 @@
         // ===== FILTERS =====
         filterBtns.forEach(btn => {
             btn.addEventListener('click', function() {
-                // Don't trigger for export button
-                if (this.id === 'exportPDF') return;
+                if (this.id === 'viewAllNotes' || this.id === 'exportPDF') return;
 
                 filterBtns.forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
@@ -1373,31 +1680,27 @@
 
         // ===== INITIALIZATION =====
         function init() {
-            // Request notification permission
             if ('Notification' in window && Notification.permission === 'default') {
                 Notification.requestPermission();
             }
 
-            // Set default date to tomorrow
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             document.getElementById('taskDueDate').value = tomorrow.toISOString().split('T')[0];
             document.getElementById('taskDueTime').value = '18:00';
 
-            // Load tasks
             loadTasks();
-
-            // Start reminder checker
-            setInterval(checkReminders, 10000); // Check every 10 seconds
+            setInterval(checkReminders, 10000);
 
             console.log('🚀 Advanced To-Do App initialized!');
             console.log(`📊 ${tasks.length} tasks loaded.`);
         }
 
-        // Make functions globally accessible for inline onclick
+        // Make functions globally accessible
         window.toggleComplete = toggleComplete;
         window.confirmDeleteTask = confirmDeleteTask;
         window.editTask = editTask;
+        window.checkOverdue = checkOverdue;
 
         // Start app
         init();
